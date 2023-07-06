@@ -199,6 +199,7 @@ import { getPricePoint, getTokenPrices } from "./lib/prices"
 import { makeFlashbotsProviderCreator } from "./services/chain/serial-fallback-provider"
 import { DismissableItem } from "./services/preferences"
 import { newPricePoints } from "./redux-slices/prices"
+import Ledger from "@tallyho/tally-ui/pages/Onboarding/Tabbed/Ledger/Ledger"
 
 // This sanitizer runs on store and action data before serializing for remote
 // redux devtools. The goal is to end up with an object that is directly
@@ -303,17 +304,27 @@ export default class Main extends BaseService<never> {
   store: ReduxStoreType
 
   static create: ServiceCreatorFunction<never, Main, []> = async () => {
-    const preferenceService = PreferenceService.create()
+    const preferenceService = PreferenceService.create(internalSignerService)
+
     const analyticsService = AnalyticsService.create(preferenceService)
 
     const internalSignerService = InternalSignerService.create(
       preferenceService,
       analyticsService
     )
+
+    const ledgerService = LedgerService.create()
+
     const chainService = ChainService.create(
       preferenceService,
       internalSignerService
     )
+
+    const signingService = SigningService.create(
+      internalSignerService,
+      ledgerService,
+    )
+
     const indexingService = IndexingService.create(
       preferenceService,
       chainService
@@ -333,14 +344,6 @@ export default class Main extends BaseService<never> {
     const doggoService = DoggoService.create(chainService, indexingService)
 
     const telemetryService = TelemetryService.create()
-
-    const ledgerService = LedgerService.create()
-
-    const signingService = SigningService.create(
-      internalSignerService,
-      ledgerService,
-      chainService
-    )
 
     const nftsService = NFTsService.create(chainService)
 
@@ -664,6 +667,7 @@ export default class Main extends BaseService<never> {
     // remove dApp premissions
     this.store.dispatch(revokePermissionsForAddress(address))
     await this.providerBridgeService.revokePermissionsForAddress(address)
+    await this.chainService.removeAccountToTrack(address)
     // TODO Adjust to handle specific network.
     await this.signingService.removeAccount(address, signer.type)
 
@@ -897,17 +901,31 @@ export default class Main extends BaseService<never> {
       "requestSignature",
       async ({ request, accountSigner }) => {
         try {
-          const signedTransactionResult =
-            await this.signingService.signTransaction(request, accountSigner)
-          await this.store.dispatch(transactionSigned(signedTransactionResult))
-          this.analyticsService.sendAnalyticsEvent(
-            AnalyticsEvent.TRANSACTION_SIGNED,
-            {
-              chainId: request.chainID,
-            }
-          )
+          const transactionWithNonce =
+            await this.chainService.populateEVMTransactionNonce(request)
+
+          try {
+            const signedTransactionResult =
+              await this.signingService.signTransaction(
+                transactionWithNonce,
+                accountSigner
+              )
+            await this.store.dispatch(
+              transactionSigned(signedTransactionResult)
+            )
+            this.analyticsService.sendAnalyticsEvent(
+              AnalyticsEvent.TRANSACTION_SIGNED,
+              {
+                chainId: request.chainID,
+              }
+            )
+          } catch (signingException) {
+            this.chainService.releaseEVMTransactionNonce(transactionWithNonce)
+            throw signingException
+          }
         } catch (exception) {
           logger.error("Error signing transaction", exception)
+
           this.store.dispatch(
             clearTransactionState(TransactionConstructionStatus.Idle)
           )

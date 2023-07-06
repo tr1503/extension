@@ -63,9 +63,6 @@ jest.mock("../services/chain/serial-fallback-provider")
 const createRandom0xHash = () =>
   keccak256(Buffer.from(Math.random().toString()))
 
-export const createPreferenceService = async (): Promise<PreferenceService> =>
-  PreferenceService.create()
-
 export async function createAnalyticsService(overrides?: {
   chainService?: Promise<ChainService>
   preferenceService?: Promise<PreferenceService>
@@ -74,6 +71,9 @@ export async function createAnalyticsService(overrides?: {
     overrides?.preferenceService ?? createPreferenceService()
   return AnalyticsService.create(preferenceService)
 }
+
+export const createLedgerService = async (): Promise<LedgerService> =>
+  LedgerService.create()
 
 type CreateInternalSignerServiceOverrides = {
   preferenceService?: Promise<PreferenceService>
@@ -87,6 +87,24 @@ export const createInternalSignerService = async (
     overrides.preferenceService ?? createPreferenceService(),
     overrides.analyticsService ?? createAnalyticsService()
   )
+
+export const createSigningService = async (
+  overrides: CreateSigningServiceOverrides = {}
+): Promise<SigningService> =>
+  SigningService.create(
+    overrides.internalSignerService ?? createInternalSignerService(),
+    overrides.ledgerService ?? createLedgerService()
+  )
+
+type CreatePreferenceServiceOverrides = {
+  signingService?: Promise<SigningService>
+}
+
+// FIXME It would be awfully nice if the preference service did not require the
+// FIXME signing service which requires the internal signer service which
+// FIXME requires the preference service........
+export const createPreferenceService = async (overrides: CreatePreferenceServiceOverrides): Promise<PreferenceService> =>
+  PreferenceService.create(overrides.signingService ?? createSigningService())
 
 type CreateChainServiceOverrides = {
   preferenceService?: Promise<PreferenceService>
@@ -128,9 +146,6 @@ export async function createIndexingService(overrides?: {
   )
 }
 
-export const createLedgerService = async (): Promise<LedgerService> =>
-  LedgerService.create()
-
 type CreateSigningServiceOverrides = {
   internalSignerService?: Promise<InternalSignerService>
   ledgerService?: Promise<LedgerService>
@@ -151,15 +166,6 @@ type CreateInternalEthereumProviderServiceOverrides = {
   chainService?: Promise<ChainService>
   preferenceService?: Promise<PreferenceService>
 }
-
-export const createSigningService = async (
-  overrides: CreateSigningServiceOverrides = {}
-): Promise<SigningService> =>
-  SigningService.create(
-    overrides.internalSignerService ?? createInternalSignerService(),
-    overrides.ledgerService ?? createLedgerService(),
-    overrides.chainService ?? createChainService()
-  )
 
 export const createAbilitiesService = async (
   overrides: CreateAbilitiesServiceOverrides = {}
