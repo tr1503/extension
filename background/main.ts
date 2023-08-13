@@ -322,7 +322,7 @@ export default class Main extends BaseService<never> {
 
     const signingService = SigningService.create(
       internalSignerService,
-      ledgerService,
+      ledgerService
     )
 
     const indexingService = IndexingService.create(
