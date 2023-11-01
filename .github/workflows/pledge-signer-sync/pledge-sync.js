@@ -1,8 +1,8 @@
 // @ts-check
 /* eslint-disable no-console */ // need logging
 /* eslint-disable no-await-in-loop  */ // need to process items in sequence
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
-import { initializeApp } from "firebase/app"
+import {getAuth, signInWithEmailAndPassword} from "firebase/auth"
+import {initializeApp} from "firebase/app"
 import {
   getFirestore,
   query,
@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore"
 import fetch from "node-fetch"
 
-const { GALXE_ACCESS_TOKEN, FIRESTORE_USER, FIRESTORE_PASSWORD } = process.env
+const {GALXE_ACCESS_TOKEN, FIRESTORE_USER, FIRESTORE_PASSWORD} = process.env
 
 if (!GALXE_ACCESS_TOKEN || !FIRESTORE_USER || !FIRESTORE_PASSWORD) {
   console.error("Missing credentials")
@@ -23,7 +23,7 @@ if (!GALXE_ACCESS_TOKEN || !FIRESTORE_USER || !FIRESTORE_PASSWORD) {
 }
 
 // Limit sync range to last 4 days ( 2 days from last sync + 2 days from now )
-const TARGET_DATE = new Date(Date.now() - 4 * 24 * 60 * 60_000)
+const TARGET_DATE = new Date(2020, 3, 1) // new Date(Date.now() - 4 * 24 * 60 * 60_000)
 
 const wait = (ms) =>
   new Promise((r) => {
@@ -78,7 +78,7 @@ const getAddresses = async () => {
 
     allDocs.push(...nextBatch)
 
-    console.log("Retrieved:", allDocs.length, "addresses")
+    //console.log("Retrieved:", allDocs.length, "addresses")
 
     await wait(1500)
   } while (nextBatch.length === CHUNK_SIZE)
@@ -98,7 +98,7 @@ const syncGalxe = async () => {
   for (let i = 0; i < addresses.length; i += CHUNK_SIZE) {
     const batch = addresses.slice(i, i + CHUNK_SIZE)
 
-    console.log("Syncing addresses...", batch.length, "of", addresses.length)
+    //console.log("Syncing addresses...", batch.length, "of", addresses.length)
 
     const payload = {
       operationName: "credentialItems",
@@ -139,7 +139,5 @@ const syncGalxe = async () => {
   }
 }
 
-syncGalxe().then(() => {
-  console.log("Sync complete!")
-  process.exit(0)
-})
+console.log((await getAddresses()).join("\n"))
+process.exit(0)

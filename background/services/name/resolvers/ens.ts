@@ -47,12 +47,12 @@ export default function ensResolverFor(
 
     async lookUpAddressForName({
       name,
-      network,
     }: NameOnNetwork): Promise<AddressOnNetwork | undefined> {
       const address = await chainService
         // Use ENS to Ethereum mainnet to resolve addresses on EVM networks (Polygon, Arbitrum, etc..)
         .providerForNetwork(ETHEREUM)
         ?.resolveName(name)
+      // FIXME .getResolver() can getName(name, coinType) or so then fall back to Ethereum
 
       if (address === undefined || address === null) {
         return undefined
@@ -60,7 +60,7 @@ export default function ensResolverFor(
 
       return {
         address,
-        network,
+        network: ETHEREUM,
       }
     },
     async lookUpAvatar(
@@ -97,7 +97,6 @@ export default function ensResolverFor(
     },
     async lookUpNameForAddress({
       address,
-      network,
     }: AddressOnNetwork): Promise<NameOnNetwork | undefined> {
       const name = await chainService
         // Hard-coded to ETHEREUM to support ENS names on ETH L2's.
@@ -110,7 +109,7 @@ export default function ensResolverFor(
 
       return {
         name,
-        network,
+        network: ETHEREUM,
       }
     },
   }

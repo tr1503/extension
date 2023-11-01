@@ -17,6 +17,7 @@ export const ETHEREUM: EVMNetwork = {
   name: "Ethereum",
   baseAsset: ETH,
   chainID: "1",
+  derivationPath: "m/44'/60'/0'/0",
   family: "EVM",
   coingeckoPlatformID: "ethereum",
 }
@@ -34,6 +35,7 @@ export const POLYGON: EVMNetwork = {
   name: "Polygon",
   baseAsset: MATIC,
   chainID: "137",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "polygon-pos",
 }
@@ -42,6 +44,7 @@ export const ARBITRUM_ONE: EVMNetwork = {
   name: "Arbitrum",
   baseAsset: ARBITRUM_ONE_ETH,
   chainID: "42161",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "arbitrum-one",
 }
@@ -50,6 +53,7 @@ export const AVALANCHE: EVMNetwork = {
   name: "Avalanche",
   baseAsset: AVAX,
   chainID: "43114",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "avalanche",
 }
@@ -58,6 +62,7 @@ export const BINANCE_SMART_CHAIN: EVMNetwork = {
   name: "BNB Chain",
   baseAsset: BNB,
   chainID: "56",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "binance-smart-chain",
 }
@@ -66,6 +71,7 @@ export const ARBITRUM_NOVA: EVMNetwork = {
   name: "Arbitrum Nova",
   baseAsset: ARBITRUM_NOVA_ETH,
   chainID: "42170",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "arbitrum-nova",
 }
@@ -74,6 +80,7 @@ export const OPTIMISM: EVMNetwork = {
   name: "Optimism",
   baseAsset: OPTIMISTIC_ETH,
   chainID: "10",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "optimistic-ethereum",
 }
@@ -82,6 +89,7 @@ export const GOERLI: EVMNetwork = {
   name: "Goerli",
   baseAsset: GOERLI_ETH,
   chainID: "5",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
   coingeckoPlatformID: "ethereum",
 }
@@ -90,6 +98,7 @@ export const ZK_SYNC: EVMNetwork = {
   name: "zkSync Era",
   baseAsset: ZK_SYNC_ETH,
   chainID: "324",
+  derivationPath: ETHEREUM.derivationPath,
   family: "EVM",
 }
 
@@ -120,6 +129,7 @@ export const FORK: EVMNetwork = {
   baseAsset: ETH,
   chainID: process.env.MAINNET_FORK_CHAIN_ID ?? "1337",
   family: "EVM",
+  derivationPath: ETHEREUM.derivationPath,
   coingeckoPlatformID: "ethereum",
 }
 

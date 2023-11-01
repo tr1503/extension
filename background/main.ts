@@ -329,7 +329,11 @@ export default class Main extends BaseService<never> {
       preferenceService,
       chainService
     )
-    const nameService = NameService.create(chainService, preferenceService)
+    const nameService = NameService.create(
+      chainService,
+      signingService,
+      preferenceService
+    )
     const enrichmentService = EnrichmentService.create(
       chainService,
       indexingService,
